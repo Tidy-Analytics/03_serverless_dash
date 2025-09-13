@@ -1,8 +1,15 @@
 name: Publish Quarto site to GitHub Pages
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - push-to-pages
+        default: 'push-to-pages'
 
 jobs:
   build-deploy:
