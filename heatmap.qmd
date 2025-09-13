@@ -1,0 +1,195 @@
+---
+title: "Customer Segment Heatmap Analysis"
+format: 
+  html:
+    code-fold: true
+    theme: cosmo
+    embed-resources: false
+---
+
+```{=html}
+<style>
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:wght@300;400;700&display=swap');
+
+/* Apply Averia Sans Libre to all Observable elements */
+.observablehq {
+  font-family: 'Averia Sans Libre', cursive !important;
+}
+
+/* Apply to the entire document */
+body, h1, h2, h3, h4, h5, h6, p {
+  font-family: 'Averia Sans Libre', cursive !important;
+}
+
+/* Custom styling for the dropdown */
+.observablehq select {
+  font-size: 16px !important;
+  padding: 10px 15px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  background-color: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+  min-width: 250px !important;
+  font-family: 'Averia Sans Libre', cursive !important;
+}
+
+.observablehq select:hover {
+  border-color: #4a90e2 !important;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2) !important;
+}
+
+.observablehq select:focus {
+  outline: none !important;
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1) !important;
+}
+
+/* Larger font for labels */
+.observablehq label {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  font-family: 'Averia Sans Libre', cursive !important;
+}
+
+/* Heatmap container background */
+.observablehq figure {
+  background-color: #f5f2e8 !important;
+  padding: 20px !important;
+  border-radius: 12px !important;
+  margin: 20px 0 !important;
+}
+</style>
+```
+
+```{ojs}
+//| echo: false
+
+// Import libraries
+Plot = import("https://cdn.skypack.dev/@observablehq/plot@0.6")
+d3 = import("https://cdn.skypack.dev/d3@7")
+```
+
+```{ojs}
+//| echo: false
+
+// Load your pre-computed data
+customerData = FileAttachment("customer_data.json").json()
+```
+
+```{ojs}
+//| echo: false
+
+// Get unique segments for the dropdown
+segments = [...new Set(customerData.map(d => d.segment_code))].sort()
+```
+
+```{ojs}
+//| echo: false
+
+// Create the segment selector
+viewof selectedSegment = Inputs.select(segments, {
+  label: "Select Customer Segment",
+  value: segments[0]
+})
+```
+
+```{ojs}
+//| echo: false
+
+// Filter data based on selection
+filteredData = customerData.filter(d => d.segment_code === selectedSegment)
+```
+
+```{ojs}
+//| echo: false
+
+// Calculate cohort averages for heatmap
+cohortAverages = d3.group(filteredData, d => d.customer_tenure_week, d => d.elapsed_week)
+```
+
+```{ojs}
+//| echo: false
+
+// Transform grouped data into heatmap format
+heatmapData = Array.from(cohortAverages, ([tenure_week, elapsedData]) => 
+  Array.from(elapsedData, ([elapsed_week, records]) => ({
+    customer_tenure_week: tenure_week,
+    elapsed_week: elapsed_week,
+    avg_amount: d3.mean(records, d => d.amount),
+    count: records.length
+  }))
+).flat()
+```
+
+```{ojs}
+//| echo: false
+
+// Display summary statistics (hidden)
+segmentSummary = ({
+  totalCustomers: [...new Set(filteredData.map(d => d.customer_id))].length,
+  totalObservations: filteredData.length,
+  avgAmount: d3.mean(filteredData, d => d.amount),
+  tenureWeeksRange: `${d3.min(filteredData, d => d.customer_tenure_week)} - ${d3.max(filteredData, d => d.customer_tenure_week)}`,
+  elapsedWeeksRange: `${d3.min(filteredData, d => d.elapsed_week)} - ${d3.max(filteredData, d => d.elapsed_week)}`
+})
+```
+
+```{ojs}
+//| echo: false
+
+// Create the cohort heatmap visualization
+Plot.plot({
+  title: `${selectedSegment} Segment: Cohort Performance Over Time`,
+  //subtitle: "Cohorts ordered chronologically (Week 1 = earliest onboarded customers)",
+  width: 900,
+  height: 500,
+  marginLeft: 100,
+  marginBottom: 60,
+  style: {
+    backgroundColor: "#f5f2e8"
+  },
+  x: {
+    label: "Elapsed Week →",
+    domain: d3.range(1, 14),
+    tickFormat: d => `W${d}`,
+    padding: 0,
+    range: [0, 900 - 100] // Ensure full width usage
+  },
+  y: {
+    label: "↑ Customer Tenure Week (Cohort)",
+    domain: d3.range(1, 11), // Changed from .reverse() to show 1 at top
+    tickFormat: d => `Cohort ${d}`,
+    padding: 0,
+    range: [500 - 60, 0] // Ensure full height usage
+  },
+  color: {
+    type: "linear",
+    scheme: "Blues",
+    label: "Average Amount ($)",
+    legend: true
+  },
+  marks: [
+    Plot.rect(heatmapData, {
+      x: "elapsed_week",
+      y: "customer_tenure_week",
+      fill: "avg_amount",
+      title: d => `Cohort ${d.customer_tenure_week}, Week ${d.elapsed_week}\nAvg Amount: $${d.avg_amount?.toFixed(2)}\nObservations: ${d.count}`,
+      stroke: "none",
+      inset: 0
+    }),
+    Plot.text(heatmapData, {
+      x: "elapsed_week",
+      y: "customer_tenure_week",
+      text: d => d.avg_amount ? `$${d.avg_amount.toFixed(0)}` : "",
+      fill: "white",
+      fontSize: 10,
+      fontWeight: "bold"
+    })
+  ]
+})
+```

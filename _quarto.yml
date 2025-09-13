@@ -1,0 +1,5 @@
+project:
+  type: website
+
+resources:
+  - customer_data.json
