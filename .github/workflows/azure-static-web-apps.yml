@@ -112,8 +112,7 @@ jobs:
           echo "client-secret=$CLIENT_SECRET" >> $GITHUB_OUTPUT
 
   build_and_deploy_job:
-    if: always() && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy-app'))
-    needs: [provision_infrastructure]
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -130,8 +129,50 @@ jobs:
 
       - name: Update Static Web App Config
         run: |
+          CLIENT_ID="${{ secrets[format('{0}_SWA_CLIENT_ID', env.CLIENT_HANDLE)] }}"
+
+          # Update staticwebapp.config.json with client-specific values
+          jq --arg client_id "$CLIENT_ID" \
+             '.auth.identityProviders.azureActiveDirectory.registration.clientIdSettingName = "AZURE_CLIENT_ID" |
+              .auth.identityProviders.azureActiveDirectory.registration.clientSecretSettingName = "AZURE_CLIENT_SECRET"' \
+             staticwebapp.config.json > staticwebapp.config.tmp && mv staticwebapp.config.tmp staticwebapp.config.json
+
+      - name: Render Quarto Project
+        run: |
+          quarto render
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets[format('{0}_AZURE_STATIC_WEB_APPS_API_TOKEN', env.CLIENT_HANDLE)] }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "_site"
+          output_location: ""
+          skip_app_build: true
+
+  build_and_deploy_workflow_dispatch:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy-app'
+    needs: [provision_infrastructure]
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job (Workflow Dispatch)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: pre-release
+          tinytex: true
+
+      - name: Update Static Web App Config
+        run: |
           CLIENT_ID="${{ needs.provision_infrastructure.outputs.app-registration-id || secrets[format('{0}_SWA_CLIENT_ID', env.CLIENT_HANDLE)] }}"
-          
+
           # Update staticwebapp.config.json with client-specific values
           jq --arg client_id "$CLIENT_ID" \
              '.auth.identityProviders.azureActiveDirectory.registration.clientIdSettingName = "AZURE_CLIENT_ID" |
