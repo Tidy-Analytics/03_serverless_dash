@@ -1,0 +1,25 @@
+---
+title: "Customer Analytics Dashboard"
+format: 
+  html:
+    theme: cosmo
+---
+
+# Welcome to Customer Analytics Dashboard
+
+This dashboard provides comprehensive analytics for customer segments and cohort analysis.
+
+## Available Analysis
+
+- [Customer Segment Heatmap](heatmap.html) - Interactive cohort analysis with segment filtering
+
+## Authentication
+
+This application requires Microsoft authentication to access. Please log in with your organizational account.
+
+## Features
+
+- **Interactive Visualizations**: Dynamic charts and heatmaps powered by Observable Plot
+- **Segment Analysis**: Filter and analyze different customer segments
+- **Cohort Tracking**: Track customer behavior over time
+- **Secure Access**: Protected by Azure AD authentication

@@ -1,5 +1,21 @@
 project:
   type: website
+  output-dir: _site
+
+website:
+  title: "Customer Analytics Dashboard"
+  navbar:
+    left:
+      - href: heatmap.html
+        text: "Heatmap Analysis"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    embed-resources: false
 
 resources:
   - customer_data.json
+  - staticwebapp.config.json

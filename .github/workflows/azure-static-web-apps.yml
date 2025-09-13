@@ -1,0 +1,257 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - deploy-app
+          - assign-permissions
+          - assign-user
+        default: 'deploy-app'
+      client_handle:
+        description: 'Client handle (e.g., bxyz, drby, mmyy, zmmr)'
+        required: true
+        type: string
+
+env:
+  CLIENT_HANDLE: ${{ github.event.inputs.client_handle || 'bxyz' }}
+
+jobs:
+  provision_infrastructure:
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'deploy-app' || github.event.inputs.action == 'assign-permissions')
+    runs-on: ubuntu-latest
+    name: Provision Azure Infrastructure
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      static-web-app-token: ${{ steps.create-swa.outputs.deployment-token }}
+      app-registration-id: ${{ steps.create-app-reg.outputs.client-id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login using Federated Credentials
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets[format('{0}_AZURE_CLIENT_ID', env.CLIENT_HANDLE)] }}
+          tenant-id: ${{ secrets[format('{0}_AZURE_TENANT_ID', env.CLIENT_HANDLE)] }}
+          subscription-id: ${{ secrets[format('{0}_AZURE_SUBSCRIPTION_ID', env.CLIENT_HANDLE)] }}
+
+      - name: Create Azure Static Web App
+        id: create-swa
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          RESOURCE_GROUP="${{ secrets[format('{0}_RESOURCE_GROUP', env.CLIENT_HANDLE)] }}"
+          LOCATION="${{ secrets[format('{0}_LOCATION', env.CLIENT_HANDLE)] }}"
+          CUSTOM_DOMAIN="${{ secrets[format('{0}_CUSTOM_DOMAIN', env.CLIENT_HANDLE)] }}"
+          
+          SWA_NAME="${CLIENT_NAME}-serverless-dash"
+          
+          # Check if Static Web App already exists
+          if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "Static Web App $SWA_NAME already exists"
+            DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" -o tsv)
+          else
+            echo "Creating Static Web App: $SWA_NAME"
+            az staticwebapp create \
+              --name "$SWA_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --source "https://github.com/Tidy-Analytics/03_serverless_dash" \
+              --location "$LOCATION" \
+              --branch "master" \
+              --app-location "_site" \
+              --output-location "" \
+              --login-with-github
+              
+            DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" -o tsv)
+          fi
+          
+          echo "deployment-token=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Create/Update Azure AD App Registration
+        id: create-app-reg
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          CUSTOM_DOMAIN="${{ secrets[format('{0}_CUSTOM_DOMAIN', env.CLIENT_HANDLE)] }}"
+          
+          APP_NAME="${CLIENT_NAME}-serverless-dash-auth"
+          SWA_URL="https://${CLIENT_NAME}-serverless-dash.azurestaticapps.net"
+          
+          # Check if app registration exists
+          if APP_ID=$(az ad app list --display-name "$APP_NAME" --query "[0].appId" -o tsv) && [ -n "$APP_ID" ]; then
+            echo "App registration $APP_NAME already exists with ID: $APP_ID"
+          else
+            echo "Creating app registration: $APP_NAME"
+            APP_ID=$(az ad app create \
+              --display-name "$APP_NAME" \
+              --web-redirect-uris "$SWA_URL/.auth/login/aad/callback" \
+              --query "appId" -o tsv)
+            echo "Created app registration with ID: $APP_ID"
+          fi
+          
+          # Create client secret
+          CLIENT_SECRET=$(az ad app credential reset --id "$APP_ID" --query "password" -o tsv)
+          
+          # Store secrets in Key Vault
+          KEYVAULT_NAME="${{ secrets[format('{0}_KEYVAULT_NAME', env.CLIENT_HANDLE)] }}"
+          az keyvault secret set --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-id" --value "$APP_ID"
+          az keyvault secret set --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-secret" --value "$CLIENT_SECRET"
+          
+          echo "client-id=$APP_ID" >> $GITHUB_OUTPUT
+          echo "client-secret=$CLIENT_SECRET" >> $GITHUB_OUTPUT
+
+  build_and_deploy_job:
+    if: always() && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy-app'))
+    needs: [provision_infrastructure]
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: pre-release
+          tinytex: true
+
+      - name: Update Static Web App Config
+        run: |
+          CLIENT_ID="${{ needs.provision_infrastructure.outputs.app-registration-id || secrets[format('{0}_SWA_CLIENT_ID', env.CLIENT_HANDLE)] }}"
+          
+          # Update staticwebapp.config.json with client-specific values
+          jq --arg client_id "$CLIENT_ID" \
+             '.auth.identityProviders.azureActiveDirectory.registration.clientIdSettingName = "AZURE_CLIENT_ID" |
+              .auth.identityProviders.azureActiveDirectory.registration.clientSecretSettingName = "AZURE_CLIENT_SECRET"' \
+             staticwebapp.config.json > staticwebapp.config.tmp && mv staticwebapp.config.tmp staticwebapp.config.json
+
+      - name: Render Quarto Project
+        run: |
+          quarto render
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ needs.provision_infrastructure.outputs.static-web-app-token || secrets[format('{0}_AZURE_STATIC_WEB_APPS_API_TOKEN', env.CLIENT_HANDLE)] }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "_site"
+          output_location: ""
+          skip_app_build: true
+          
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets[format('{0}_AZURE_STATIC_WEB_APPS_API_TOKEN', env.CLIENT_HANDLE)] }}
+          action: "close"
+          app_location: "_site"
+
+  assign_permissions_job:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'assign-permissions'
+    needs: [provision_infrastructure]
+    runs-on: ubuntu-latest
+    name: Assign Permissions Job
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login using Federated Credentials
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets[format('{0}_AZURE_CLIENT_ID', env.CLIENT_HANDLE)] }}
+          tenant-id: ${{ secrets[format('{0}_AZURE_TENANT_ID', env.CLIENT_HANDLE)] }}
+          subscription-id: ${{ secrets[format('{0}_AZURE_SUBSCRIPTION_ID', env.CLIENT_HANDLE)] }}
+
+      - name: Assign Static Web App Permissions
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          RESOURCE_GROUP="${{ secrets[format('{0}_RESOURCE_GROUP', env.CLIENT_HANDLE)] }}"
+          SWA_NAME="${CLIENT_NAME}-serverless-dash"
+          APP_OWNER="${{ secrets[format('{0}_APP_OWNER', env.CLIENT_HANDLE)] }}"
+          
+          # Get Static Web App resource ID
+          SWA_ID=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "id" -o tsv)
+          
+          # Assign Contributor role to app owner
+          az role assignment create \
+            --assignee "$APP_OWNER" \
+            --role "Static Web App Contributor" \
+            --scope "$SWA_ID"
+            
+          echo "Assigned Static Web App Contributor role to $APP_OWNER"
+
+      - name: Configure Static Web App Settings
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          RESOURCE_GROUP="${{ secrets[format('{0}_RESOURCE_GROUP', env.CLIENT_HANDLE)] }}"
+          SWA_NAME="${CLIENT_NAME}-serverless-dash"
+          KEYVAULT_NAME="${{ secrets[format('{0}_KEYVAULT_NAME', env.CLIENT_HANDLE)] }}"
+          
+          # Get secrets from Key Vault
+          CLIENT_ID=$(az keyvault secret show --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-id" --query "value" -o tsv)
+          CLIENT_SECRET=$(az keyvault secret show --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-secret" --query "value" -o tsv)
+          
+          # Set application settings
+          az staticwebapp appsettings set \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --setting-names "AZURE_CLIENT_ID=$CLIENT_ID" "AZURE_CLIENT_SECRET=$CLIENT_SECRET"
+            
+          echo "Configured application settings for authentication"
+          
+  assign_user_job:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'assign-user'
+    runs-on: ubuntu-latest
+    name: Assign User Job
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login using Federated Credentials
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets[format('{0}_AZURE_CLIENT_ID', env.CLIENT_HANDLE)] }}
+          tenant-id: ${{ secrets[format('{0}_AZURE_TENANT_ID', env.CLIENT_HANDLE)] }}
+          subscription-id: ${{ secrets[format('{0}_AZURE_SUBSCRIPTION_ID', env.CLIENT_HANDLE)] }}
+
+      - name: Assign User Access to Static Web App
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          RESOURCE_GROUP="${{ secrets[format('{0}_RESOURCE_GROUP', env.CLIENT_HANDLE)] }}"
+          SWA_NAME="${CLIENT_NAME}-serverless-dash"
+          APP_OWNER="${{ secrets[format('{0}_APP_OWNER', env.CLIENT_HANDLE)] }}"
+          
+          # Invite user to the Static Web App
+          az staticwebapp users invite \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --authentication-provider "AAD" \
+            --user-details "$APP_OWNER" \
+            --roles "authenticated" \
+            --invitation-expiration-in-hours 24
+            
+          echo "Invited user $APP_OWNER to access the Static Web App"
