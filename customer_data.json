@@ -1,0 +1,1094 @@
+[
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 1,
+    "amount": 120
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 2,
+    "amount": 135
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 3,
+    "amount": 142
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 4,
+    "amount": 155
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 5,
+    "amount": 168
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 6,
+    "amount": 175
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 7,
+    "amount": 180
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 8,
+    "amount": 185
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 9,
+    "amount": 190
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 10,
+    "amount": 195
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 11,
+    "amount": 200
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 12,
+    "amount": 205
+  },
+  {
+    "customer_id": "C001",
+    "segment_code": "Premium",
+    "customer_tenure_week": 1,
+    "elapsed_week": 13,
+    "amount": 210
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 1,
+    "amount": 115
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 2,
+    "amount": 128
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 3,
+    "amount": 145
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 4,
+    "amount": 158
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 5,
+    "amount": 165
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 6,
+    "amount": 172
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 7,
+    "amount": 178
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 8,
+    "amount": 185
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 9,
+    "amount": 192
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 10,
+    "amount": 198
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 11,
+    "amount": 205
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 12,
+    "amount": 212
+  },
+  {
+    "customer_id": "C002",
+    "segment_code": "Premium",
+    "customer_tenure_week": 3,
+    "elapsed_week": 13,
+    "amount": 220
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 1,
+    "amount": 108
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 2,
+    "amount": 122
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 3,
+    "amount": 138
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 4,
+    "amount": 152
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 5,
+    "amount": 162
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 6,
+    "amount": 168
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 7,
+    "amount": 175
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 8,
+    "amount": 182
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 9,
+    "amount": 188
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 10,
+    "amount": 195
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 11,
+    "amount": 202
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 12,
+    "amount": 208
+  },
+  {
+    "customer_id": "C003",
+    "segment_code": "Premium",
+    "customer_tenure_week": 6,
+    "elapsed_week": 13,
+    "amount": 215
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 1,
+    "amount": 95
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 2,
+    "amount": 105
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 3,
+    "amount": 118
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 4,
+    "amount": 132
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 5,
+    "amount": 145
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 6,
+    "amount": 155
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 7,
+    "amount": 162
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 8,
+    "amount": 168
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 9,
+    "amount": 175
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 10,
+    "amount": 182
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 11,
+    "amount": 188
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 12,
+    "amount": 195
+  },
+  {
+    "customer_id": "C004",
+    "segment_code": "Premium",
+    "customer_tenure_week": 10,
+    "elapsed_week": 13,
+    "amount": 202
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 1,
+    "amount": 75
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 2,
+    "amount": 82
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 3,
+    "amount": 88
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 4,
+    "amount": 95
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 5,
+    "amount": 102
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 6,
+    "amount": 108
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 7,
+    "amount": 115
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 8,
+    "amount": 122
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 9,
+    "amount": 128
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 10,
+    "amount": 135
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 11,
+    "amount": 142
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 12,
+    "amount": 148
+  },
+  {
+    "customer_id": "C005",
+    "segment_code": "Standard",
+    "customer_tenure_week": 1,
+    "elapsed_week": 13,
+    "amount": 155
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 1,
+    "amount": 68
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 2,
+    "amount": 75
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 3,
+    "amount": 82
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 4,
+    "amount": 88
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 5,
+    "amount": 95
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 6,
+    "amount": 102
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 7,
+    "amount": 108
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 8,
+    "amount": 115
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 9,
+    "amount": 122
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 10,
+    "amount": 128
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 11,
+    "amount": 135
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 12,
+    "amount": 142
+  },
+  {
+    "customer_id": "C006",
+    "segment_code": "Standard",
+    "customer_tenure_week": 4,
+    "elapsed_week": 13,
+    "amount": 148
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 1,
+    "amount": 62
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 2,
+    "amount": 68
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 3,
+    "amount": 75
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 4,
+    "amount": 82
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 5,
+    "amount": 88
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 6,
+    "amount": 95
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 7,
+    "amount": 102
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 8,
+    "amount": 108
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 9,
+    "amount": 115
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 10,
+    "amount": 122
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 11,
+    "amount": 128
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 12,
+    "amount": 135
+  },
+  {
+    "customer_id": "C007",
+    "segment_code": "Standard",
+    "customer_tenure_week": 7,
+    "elapsed_week": 13,
+    "amount": 142
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 1,
+    "amount": 58
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 2,
+    "amount": 65
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 3,
+    "amount": 72
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 4,
+    "amount": 78
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 5,
+    "amount": 85
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 6,
+    "amount": 92
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 7,
+    "amount": 98
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 8,
+    "amount": 105
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 9,
+    "amount": 112
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 10,
+    "amount": 118
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 11,
+    "amount": 125
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 12,
+    "amount": 132
+  },
+  {
+    "customer_id": "C008",
+    "segment_code": "Standard",
+    "customer_tenure_week": 9,
+    "elapsed_week": 13,
+    "amount": 138
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 1,
+    "amount": 35
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 2,
+    "amount": 38
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 3,
+    "amount": 42
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 4,
+    "amount": 45
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 5,
+    "amount": 48
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 6,
+    "amount": 52
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 7,
+    "amount": 55
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 8,
+    "amount": 58
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 9,
+    "amount": 62
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 10,
+    "amount": 65
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 11,
+    "amount": 68
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 12,
+    "amount": 72
+  },
+  {
+    "customer_id": "C009",
+    "segment_code": "Basic",
+    "customer_tenure_week": 2,
+    "elapsed_week": 13,
+    "amount": 75
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 1,
+    "amount": 32
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 2,
+    "amount": 35
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 3,
+    "amount": 38
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 4,
+    "amount": 42
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 5,
+    "amount": 45
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 6,
+    "amount": 48
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 7,
+    "amount": 52
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 8,
+    "amount": 55
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 9,
+    "amount": 58
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 10,
+    "amount": 62
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 11,
+    "amount": 65
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 12,
+    "amount": 68
+  },
+  {
+    "customer_id": "C010",
+    "segment_code": "Basic",
+    "customer_tenure_week": 5,
+    "elapsed_week": 13,
+    "amount": 72
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 1,
+    "amount": 28
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 2,
+    "amount": 32
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 3,
+    "amount": 35
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 4,
+    "amount": 38
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 5,
+    "amount": 42
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 6,
+    "amount": 45
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 7,
+    "amount": 48
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 8,
+    "amount": 52
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 9,
+    "amount": 55
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 10,
+    "amount": 58
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 11,
+    "amount": 62
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 12,
+    "amount": 65
+  },
+  {
+    "customer_id": "C011",
+    "segment_code": "Basic",
+    "customer_tenure_week": 8,
+    "elapsed_week": 13,
+    "amount": 68
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 1,
+    "amount": 25
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 2,
+    "amount": 28
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 3,
+    "amount": 32
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 4,
+    "amount": 35
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 5,
+    "amount": 38
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 6,
+    "amount": 42
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 7,
+    "amount": 45
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 8,
+    "amount": 48
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 9,
+    "amount": 52
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 10,
+    "amount": 55
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 11,
+    "amount": 58
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 12,
+    "amount": 62
+  },
+  {
+    "customer_id": "C012",
+    "segment_code": "Basic",
+    "customer_tenure_week": 10,
+    "elapsed_week": 13,
+    "amount": 65
+  }
+]
