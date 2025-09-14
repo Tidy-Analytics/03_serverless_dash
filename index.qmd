@@ -1,8 +1,11 @@
 ---
 title: "Customer Analytics Dashboard"
-format: 
+format:
   html:
     theme: cosmo
+    embed-resources: false
+    include-in-header: |
+      <script src="runtime-config.js"></script>
 ---
 
 # Welcome to Customer Analytics Dashboard

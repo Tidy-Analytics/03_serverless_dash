@@ -121,6 +121,16 @@ jobs:
           version: pre-release
           tinytex: true
 
+      - name: Refresh SAS Tokens
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          echo "Refreshing SAS tokens for client: $CLIENT_NAME"
+
+          # Run the SAS token refresh script with 30-day expiry for app deployments
+          ./scripts/update-sas-url.sh "$CLIENT_NAME" 30
+
+          echo "SAS tokens refreshed successfully"
+
       - name: Update Static Web App Config
         run: |
           CLIENT_ID="${{ needs.provision_infrastructure.outputs.app-registration-id || secrets[format('{0}_SWA_CLIENT_ID', env.CLIENT_HANDLE)] }}"
@@ -130,6 +140,28 @@ jobs:
              '.auth.identityProviders.azureActiveDirectory.registration.clientIdSettingName = "AZURE_CLIENT_ID" |
               .auth.identityProviders.azureActiveDirectory.registration.clientSecretSettingName = "AZURE_CLIENT_SECRET"' \
              staticwebapp.config.json > staticwebapp.config.tmp && mv staticwebapp.config.tmp staticwebapp.config.json
+
+      - name: Create Runtime Configuration
+        run: |
+          CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+          STORAGE_ACCOUNT_NAME="${{ secrets[format('{0}_STORAGE_ACCOUNT_NAME', env.CLIENT_HANDLE)] }}"
+          BLOB_CONTAINER_NAME="${{ secrets[format('{0}_BLOB_CONTAINER_NAME', env.CLIENT_HANDLE)] }}"
+
+          # Get the refreshed SAS token from KeyVault (updated by the refresh script)
+          KEYVAULT_NAME="${CLIENT_NAME}-kv"
+          STORAGE_SAS_TOKEN=$(az keyvault secret show --vault-name "$KEYVAULT_NAME" --name "storage-sas-token" --query "value" -o tsv)
+
+          # Create runtime config JavaScript file for blob storage access
+          cat > _site/runtime-config.js << EOF
+          window.runtimeConfig = {
+            storageAccountName: '$STORAGE_ACCOUNT_NAME',
+            sasToken: '$STORAGE_SAS_TOKEN',
+            containerName: '$BLOB_CONTAINER_NAME',
+            dataFileName: 'customer_data.json'
+          };
+          EOF
+
+          echo "Created runtime configuration for blob storage access with refreshed SAS token"
 
       - name: Render Quarto Project
         run: |

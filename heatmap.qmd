@@ -1,10 +1,12 @@
 ---
 title: "Customer Segment Heatmap Analysis"
-format: 
+format:
   html:
     code-fold: true
     theme: cosmo
     embed-resources: false
+    include-in-header: |
+      <script src="runtime-config.js"></script>
 ---
 
 ```{=html}
@@ -77,8 +79,31 @@ d3 = import("https://cdn.skypack.dev/d3@7")
 ```{ojs}
 //| echo: false
 
-// Load your pre-computed data
-customerData = FileAttachment("customer_data.json").json()
+// Load customer data from blob storage or fallback to local data
+customerData = await (async () => {
+  // Try to load data from Azure Blob Storage using runtime config
+  const runtimeConfig = window.runtimeConfig || {};
+  const { storageAccountName, sasToken, containerName, dataFileName = 'customer_data.json' } = runtimeConfig;
+
+  if (storageAccountName && sasToken && containerName) {
+    try {
+      const blobUrl = `https://${storageAccountName}.blob.core.windows.net/${containerName}/${dataFileName}?${sasToken}`;
+      const response = await fetch(blobUrl);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Loaded ${data.length} customer records from blob storage`);
+        return data;
+      }
+    } catch (error) {
+      console.warn('Failed to load from blob storage, using local data:', error);
+    }
+  }
+
+  // Fallback to local data file
+  console.log('Using local customer data file');
+  return FileAttachment("customer_data.json").json();
+})()
 ```
 
 ```{ojs}
