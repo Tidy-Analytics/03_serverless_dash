@@ -30,7 +30,7 @@ Added automated SAS token refresh as part of the deployment pipeline:
 ```yaml
 - name: Refresh SAS Tokens
   run: |
-    CLIENT_NAME="${{ env.CLIENT_HANDLE }}"
+    CLIENT_NAME="${{ env.CLIENT_NAME }}"
     echo "Refreshing SAS tokens for client: $CLIENT_NAME"
 
     # Run with 30-day expiry for app deployments

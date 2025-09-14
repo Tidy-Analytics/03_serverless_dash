@@ -1,10 +1,10 @@
 // Data fetcher for Azure Blob Storage
 // This script fetches client data from Azure Blob Storage during build time
 
-const CLIENT_HANDLE = process.env.CLIENT_HANDLE || process.env.CLIENT_NAME || 'demo';
-const STORAGE_ACCOUNT_NAME = process.env.STORAGE_ACCOUNT_NAME || `${CLIENT_HANDLE.toLowerCase()}storage`;
+const CLIENT_NAME = process.env.CLIENT_NAME || 'demo';
+const STORAGE_ACCOUNT_NAME = process.env.STORAGE_ACCOUNT_NAME || `${CLIENT_NAME.toLowerCase()}storage`;
 const SAS_TOKEN = process.env.STORAGE_SAS_TOKEN || '';
-const CONTAINER_NAME = process.env.BLOB_CONTAINER_NAME || `${CLIENT_HANDLE}-in`;
+const CONTAINER_NAME = process.env.BLOB_CONTAINER_NAME || `${CLIENT_NAME}-in`;
 const DATA_FILE_NAME = process.env.DATA_FILE_NAME || 'customer_data.json';
 
 async function fetchCustomerData() {

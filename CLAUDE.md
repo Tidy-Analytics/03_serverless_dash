@@ -85,6 +85,8 @@ These rules should always be followed for any work done in this repo:
 
 1) All new work in this repo should be summarized to markdown files stored in the 'lineage' directory. Each of these files should be timestamped for the date that the changes were made, as a suffix in YYYY-MM-DD format, eg' 'sas-token-integration-2025-09-14.md'. 
 
+IMPORTANT:  When generating markdown files that are time or date stamped, always check the local current date and time, US Central timezone, so that erroneous dates are not used
+
 ## NOTE: You should wait to do these summaries until prompted, you will be given the instruction to 'document your work' in the chat.
 
 
