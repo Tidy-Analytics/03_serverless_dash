@@ -78,8 +78,8 @@ jobs:
         # Clean up
         rm quarto-${{ env.QUARTO_VERSION }}-linux-amd64.deb
 
-    - name: Azure Login (OIDC)
-      uses: azure/login@v1
+    - name: Azure Login
+      uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
