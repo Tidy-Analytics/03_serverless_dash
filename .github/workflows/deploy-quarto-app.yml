@@ -109,6 +109,7 @@ jobs:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: Retrieve Deployment Token
       id: deployment_token
@@ -160,7 +161,7 @@ jobs:
       uses: Azure/static-web-apps-deploy@v1
       with:
         azure_static_web_apps_api_token: ${{ steps.deployment_token.outputs.DEPLOYMENT_TOKEN }}
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        repo_token: ${{ secrets.GH_TOKEN }}
         action: "upload"
         app_location: "_site"
         output_location: ""

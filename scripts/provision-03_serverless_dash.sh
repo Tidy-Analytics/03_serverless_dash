@@ -71,15 +71,31 @@ if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAM
     DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "properties.apiKey" -o tsv)
 else
     echo "Creating Static Web App: $SWA_NAME"
-    az staticwebapp create \
-      --name "$SWA_NAME" \
-      --resource-group "$RESOURCE_GROUP_NAME" \
-      --source "https://github.com/$APP_REPO" \
-      --location "$LOCATION" \
-      --branch "master" \
-      --app-location "_site" \
-      --output-location "" \
-      --login-with-github
+    
+    # Check if GH_TOKEN is available for non-interactive GitHub authentication
+    if [ -n "$GH_TOKEN" ]; then
+        echo "Using GitHub token for authentication"
+        az staticwebapp create \
+          --name "$SWA_NAME" \
+          --resource-group "$RESOURCE_GROUP_NAME" \
+          --source "https://github.com/$APP_REPO" \
+          --location "$LOCATION" \
+          --branch "master" \
+          --app-location "_site" \
+          --output-location "" \
+          --token "$GH_TOKEN"
+    else
+        echo "No GitHub token available, using interactive login"
+        az staticwebapp create \
+          --name "$SWA_NAME" \
+          --resource-group "$RESOURCE_GROUP_NAME" \
+          --source "https://github.com/$APP_REPO" \
+          --location "$LOCATION" \
+          --branch "master" \
+          --app-location "_site" \
+          --output-location "" \
+          --login-with-github
+    fi
 
     if [ $? -eq 0 ]; then
         echo "✓ Static Web App created successfully"
