@@ -24,11 +24,11 @@ else
 fi
 
 # Set defaults for required values
-RESOURCE_GROUP=${RESOURCE_GROUP:-"${CLIENT_NAME}-rg"}
+RESOURCE_GROUP_NAME=${RESOURCE_GROUP_NAME:-"${CLIENT_NAME}-rg"}
 LOCATION=${LOCATION:-"CentralUS"}
 CUSTOM_DOMAIN=${CUSTOM_DOMAIN:-"${CLIENT_NAME}.tidyanalytics.com"}
-KEYVAULT_NAME=${KEYVAULT_NAME:-"${CLIENT_NAME}-kv"}
-REPO_NAME=${REPO_NAME:-"Tidy-Analytics/03_serverless_dash"}
+VAULT_NAME=${VAULT_NAME:-"${CLIENT_NAME}-kv"}
+APP_REPO=${APP_REPO:-"Tidy-Analytics/03_serverless_dash"}
 
 # Validate required configuration
 if [ -z "$AZURE_SUBSCRIPTION_ID" ] || [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_TENANT_ID" ]; then
@@ -44,11 +44,11 @@ fi
 echo ""
 echo "Configuration summary:"
 echo "  Client: $CLIENT_NAME"
-echo "  Resource Group: $RESOURCE_GROUP"
+echo "  Resource Group: $RESOURCE_GROUP_NAME"
 echo "  Location: $LOCATION"
 echo "  Custom Domain: $CUSTOM_DOMAIN"
-echo "  Key Vault: $KEYVAULT_NAME"
-echo "  Repository: $REPO_NAME"
+echo "  Key Vault: $VAULT_NAME"
+echo "  Repository: $APP_REPO"
 echo "  App Owner: $APP_OWNER"
 
 # Set derived resource names
@@ -57,24 +57,24 @@ APP_REG_NAME="${CLIENT_NAME}-serverless-dash-auth"
 
 echo ""
 echo "=== Step 1: Verify Resource Group exists ==="
-if ! az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
-    echo "Error: Resource group $RESOURCE_GROUP does not exist"
+if ! az group show --name "$RESOURCE_GROUP_NAME" >/dev/null 2>&1; then
+    echo "Error: Resource group $RESOURCE_GROUP_NAME does not exist"
     echo "Please run 00_clientinfra provisioning first to create client infrastructure"
     exit 1
 fi
-echo "✓ Resource group $RESOURCE_GROUP exists"
+echo "✓ Resource group $RESOURCE_GROUP_NAME exists"
 
 echo ""
 echo "=== Step 2: Create Azure Static Web App ==="
-if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" >/dev/null 2>&1; then
     echo "Static Web App $SWA_NAME already exists"
-    DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" -o tsv)
+    DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "properties.apiKey" -o tsv)
 else
     echo "Creating Static Web App: $SWA_NAME"
     az staticwebapp create \
       --name "$SWA_NAME" \
-      --resource-group "$RESOURCE_GROUP" \
-      --source "https://github.com/$REPO_NAME" \
+      --resource-group "$RESOURCE_GROUP_NAME" \
+      --source "https://github.com/$APP_REPO" \
       --location "$LOCATION" \
       --branch "master" \
       --app-location "_site" \
@@ -83,7 +83,7 @@ else
 
     if [ $? -eq 0 ]; then
         echo "✓ Static Web App created successfully"
-        DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" -o tsv)
+        DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "properties.apiKey" -o tsv)
     else
         echo "❌ Failed to create Static Web App"
         exit 1
@@ -126,11 +126,11 @@ fi
 echo ""
 echo "=== Step 4: Store secrets in Key Vault ==="
 # Store application secrets in Key Vault
-echo "Storing SWA secrets in Key Vault: $KEYVAULT_NAME"
+echo "Storing SWA secrets in Key Vault: $VAULT_NAME"
 
-az keyvault secret set --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-id" --value "$APP_ID" >/dev/null
-az keyvault secret set --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-client-secret" --value "$CLIENT_SECRET" >/dev/null
-az keyvault secret set --vault-name "$KEYVAULT_NAME" --name "${CLIENT_NAME}-swa-deployment-token" --value "$DEPLOYMENT_TOKEN" >/dev/null
+az keyvault secret set --vault-name "$VAULT_NAME" --name "${CLIENT_NAME}-swa-client-id" --value "$APP_ID" >/dev/null
+az keyvault secret set --vault-name "$VAULT_NAME" --name "${CLIENT_NAME}-swa-client-secret" --value "$CLIENT_SECRET" >/dev/null
+az keyvault secret set --vault-name "$VAULT_NAME" --name "${CLIENT_NAME}-swa-deployment-token" --value "$DEPLOYMENT_TOKEN" >/dev/null
 
 if [ $? -eq 0 ]; then
     echo "✓ Secrets stored in Key Vault"
@@ -145,7 +145,7 @@ echo "=== Step 5: Configure Static Web App Settings ==="
 echo "Setting Static Web App application settings..."
 az staticwebapp appsettings set \
   --name "$SWA_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
   --setting-names "AZURE_CLIENT_ID=$APP_ID" "AZURE_CLIENT_SECRET=$CLIENT_SECRET"
 
 if [ $? -eq 0 ]; then
@@ -158,7 +158,7 @@ fi
 echo ""
 echo "=== Step 6: Set up user permissions ==="
 # Get Static Web App resource ID for role assignment
-SWA_ID=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "id" -o tsv)
+SWA_ID=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "id" -o tsv)
 
 # Assign Contributor role to app owner
 echo "Assigning Static Web App Contributor role to $APP_OWNER..."
@@ -171,7 +171,7 @@ az role assignment create \
 echo "Inviting user to Static Web App..."
 az staticwebapp users invite \
   --name "$SWA_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
+  --resource-group "$RESOURCE_GROUP_NAME" \
   --authentication-provider "AAD" \
   --user-details "$APP_OWNER" \
   --roles "authenticated" \
@@ -183,7 +183,7 @@ echo "✅ Static Web App: $SWA_NAME"
 echo "✅ App Registration: $APP_REG_NAME (ID: $APP_ID)"
 echo "✅ Static Web App URL: $SWA_URL"
 echo "✅ Authentication configured"
-echo "✅ Secrets stored in Key Vault: $KEYVAULT_NAME"
+echo "✅ Secrets stored in Key Vault: $VAULT_NAME"
 echo ""
 echo "Next steps:"
 echo "1. The Static Web App is ready for deployment"
