@@ -61,9 +61,22 @@ jobs:
           any::ggplot2
 
     - name: Setup Quarto
-      uses: quarto-dev/quarto-actions/setup@v2
-      with:
-        version: ${{ env.QUARTO_VERSION }}
+      run: |
+        echo "Installing Quarto ${{ env.QUARTO_VERSION }}..."
+        
+        # Download Quarto
+        wget -q https://github.com/quarto-dev/quarto-cli/releases/download/v${{ env.QUARTO_VERSION }}/quarto-${{ env.QUARTO_VERSION }}-linux-amd64.deb
+        
+        # Install with proper downgrade handling
+        sudo apt-get update
+        sudo dpkg -i quarto-${{ env.QUARTO_VERSION }}-linux-amd64.deb || true
+        sudo apt-get install -f -y --allow-downgrades
+        
+        # Verify installation
+        quarto --version
+        
+        # Clean up
+        rm quarto-${{ env.QUARTO_VERSION }}-linux-amd64.deb
 
     - name: Azure Login (OIDC)
       uses: azure/login@v1
