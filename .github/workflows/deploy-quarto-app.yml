@@ -1,17 +1,10 @@
 name: Deploy Quarto App to Azure Static Web Apps
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - master
   workflow_dispatch:
     inputs:
       client_name:
-        description: 'Client name for deployment'
+        description: 'Client name for deployment (4-character identifier)'
         required: true
         type: string
 
@@ -22,10 +15,10 @@ env:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-    environment: ${{ github.event.inputs.client_name || 'default' }}
+    environment: ${{ github.event.inputs.client_name }}
     
     permissions:
       id-token: write
@@ -88,21 +81,19 @@ jobs:
     - name: Load Configuration
       id: config
       run: |
+        # Require CLIENT_NAME for deployment
+        CLIENT_NAME="${{ github.event.inputs.client_name }}"
+        if [ -z "$CLIENT_NAME" ]; then
+          echo "Error: CLIENT_NAME is required. This workflow can only be run via workflow_dispatch with a client_name input."
+          exit 1
+        fi
+        
         # Load configuration from environment or secrets
-        echo "CLIENT_NAME=${{ github.event.inputs.client_name || secrets.CLIENT_NAME }}" >> $GITHUB_OUTPUT
+        echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_OUTPUT
         echo "RESOURCE_GROUP_NAME=${{ secrets.RESOURCE_GROUP_NAME }}" >> $GITHUB_OUTPUT
         echo "LOCATION=${{ secrets.LOCATION }}" >> $GITHUB_OUTPUT
         echo "APP_OWNER=${{ secrets.APP_OWNER }}" >> $GITHUB_OUTPUT
         echo "VAULT_NAME=${{ secrets.VAULT_NAME }}" >> $GITHUB_OUTPUT
-        
-        # Set defaults if not provided
-        CLIENT_NAME="${{ github.event.inputs.client_name || secrets.CLIENT_NAME }}"
-        if [ -z "$CLIENT_NAME" ]; then
-          echo "Error: CLIENT_NAME is required"
-          exit 1
-        fi
-        
-        echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_OUTPUT
         echo "SWA_NAME=${CLIENT_NAME}-serverless-dash" >> $GITHUB_OUTPUT
 
     - name: Provision Infrastructure
@@ -210,59 +201,3 @@ jobs:
         echo "Resource Group: ${{ steps.config.outputs.RESOURCE_GROUP_NAME }}"
         echo "App URL: https://${{ steps.config.outputs.SWA_NAME }}.azurestaticapps.net"
         echo "=================================="
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    environment: ${{ github.event.inputs.client_name || 'default' }}
-    
-    permissions:
-      id-token: write
-      contents: read
-      
-    steps:
-    - name: Azure Login (OIDC)
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - name: Load Configuration
-      id: config
-      run: |
-        CLIENT_NAME="${{ secrets.CLIENT_NAME }}"
-        if [ -z "$CLIENT_NAME" ]; then
-          echo "Error: CLIENT_NAME is required"
-          exit 1
-        fi
-        
-        echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_OUTPUT
-        echo "SWA_NAME=${CLIENT_NAME}-serverless-dash" >> $GITHUB_OUTPUT
-
-    - name: Retrieve Deployment Token
-      id: deployment_token
-      run: |
-        VAULT_NAME="${{ secrets.VAULT_NAME }}"
-        
-        DEPLOYMENT_TOKEN=$(az keyvault secret show \
-          --vault-name "$VAULT_NAME" \
-          --name "${{ steps.config.outputs.CLIENT_NAME }}-swa-deployment-token" \
-          --query value -o tsv 2>/dev/null || echo "")
-        
-        if [ -z "$DEPLOYMENT_TOKEN" ]; then
-          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
-            --name "${{ steps.config.outputs.SWA_NAME }}" \
-            --resource-group "${{ secrets.RESOURCE_GROUP_NAME }}" \
-            --query "properties.apiKey" -o tsv)
-        fi
-        
-        echo "::add-mask::$DEPLOYMENT_TOKEN"
-        echo "DEPLOYMENT_TOKEN=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
-
-    - name: Close Pull Request
-      uses: Azure/static-web-apps-deploy@v1
-      with:
-        azure_static_web_apps_api_token: ${{ steps.deployment_token.outputs.DEPLOYMENT_TOKEN }}
-        action: "close"
