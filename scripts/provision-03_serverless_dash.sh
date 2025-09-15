@@ -91,7 +91,42 @@ else
 fi
 
 echo ""
-echo "=== Step 3: Create/Update Azure AD App Registration ==="
+echo "=== Step 3: Create/Invite App Owner User ==="
+if [ -n "$APP_OWNER" ]; then
+    echo "Checking if user $APP_OWNER exists in tenant..."
+    
+    # Check if user exists in the tenant
+    USER_EXISTS=$(az ad user show --id "$APP_OWNER" --query "id" -o tsv 2>/dev/null || echo "")
+    
+    if [ -z "$USER_EXISTS" ]; then
+        echo "User $APP_OWNER not found in tenant. Attempting to invite as guest user..."
+        
+        # Invite user as guest (requires Global Administrator or Guest Inviter role)
+        INVITATION_RESULT=$(az ad user invite \
+          --invited-user-email-address "$APP_OWNER" \
+          --invite-redirect-url "https://${CLIENT_NAME}.tidyanalytics.com" \
+          --send-invitation-message true \
+          --query "id" -o tsv 2>/dev/null || echo "")
+        
+        if [ -n "$INVITATION_RESULT" ]; then
+            echo "✓ Invited $APP_OWNER as guest user"
+            USER_ID="$INVITATION_RESULT"
+        else
+            echo "⚠ Could not invite user automatically. Manual invitation may be required."
+            echo "  Admin should invite $APP_OWNER to the tenant manually"
+            USER_ID=""
+        fi
+    else
+        echo "✓ User $APP_OWNER already exists in tenant"
+        USER_ID="$USER_EXISTS"
+    fi
+else
+    echo "⚠ No APP_OWNER specified, skipping user creation"
+    USER_ID=""
+fi
+
+echo ""
+echo "=== Step 4: Create/Update Azure AD App Registration ==="
 SWA_URL="https://${SWA_NAME}.azurestaticapps.net"
 
 # Check if app registration exists
@@ -124,7 +159,7 @@ else
 fi
 
 echo ""
-echo "=== Step 4: Store secrets in Key Vault ==="
+echo "=== Step 5: Store secrets in Key Vault ==="
 # Store application secrets in Key Vault
 echo "Storing SWA secrets in Key Vault: $VAULT_NAME"
 
@@ -140,7 +175,7 @@ else
 fi
 
 echo ""
-echo "=== Step 5: Configure Static Web App Settings ==="
+echo "=== Step 6: Configure Static Web App Settings ==="
 # Set application settings for authentication
 echo "Setting Static Web App application settings..."
 az staticwebapp appsettings set \
@@ -156,26 +191,30 @@ else
 fi
 
 echo ""
-echo "=== Step 6: Set up user permissions ==="
+echo "=== Step 7: Set up user permissions ==="
 # Get Static Web App resource ID for role assignment
 SWA_ID=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "id" -o tsv)
 
 # Assign Contributor role to app owner
-echo "Assigning Static Web App Contributor role to $APP_OWNER..."
-az role assignment create \
-  --assignee "$APP_OWNER" \
-  --role "Static Web App Contributor" \
-  --scope "$SWA_ID" 2>/dev/null
+if [ -n "$USER_ID" ]; then
+    echo "Assigning Static Web App Contributor role to $APP_OWNER..."
+    az role assignment create \
+      --assignee "$USER_ID" \
+      --role "Static Web App Contributor" \
+      --scope "$SWA_ID" 2>/dev/null
 
-# Invite user to the Static Web App (this might fail if user doesn't exist in tenant yet)
-echo "Inviting user to Static Web App..."
-az staticwebapp users invite \
-  --name "$SWA_NAME" \
-  --resource-group "$RESOURCE_GROUP_NAME" \
-  --authentication-provider "AAD" \
-  --user-details "$APP_OWNER" \
-  --roles "authenticated" \
-  --invitation-expiration-in-hours 24 2>/dev/null || echo "Note: User invitation may require manual setup"
+    # Invite user to the Static Web App
+    echo "Inviting user to Static Web App..."
+    az staticwebapp users invite \
+      --name "$SWA_NAME" \
+      --resource-group "$RESOURCE_GROUP_NAME" \
+      --authentication-provider "AAD" \
+      --user-details "$APP_OWNER" \
+      --roles "authenticated" \
+      --invitation-expiration-in-hours 24 2>/dev/null || echo "Note: User invitation may require manual setup"
+else
+    echo "⚠ No valid user ID available, skipping role assignments"
+fi
 
 echo ""
 echo "===== Provisioning Complete ====="

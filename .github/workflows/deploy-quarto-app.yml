@@ -1,0 +1,255 @@
+name: Deploy Quarto App to Azure Static Web Apps
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      client_name:
+        description: 'Client name for deployment'
+        required: true
+        type: string
+
+# Environment variables
+env:
+  NODE_VERSION: '18'
+  QUARTO_VERSION: '1.4.549'
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    environment: ${{ github.event.inputs.client_name || 'default' }}
+    
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup R
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.3.2'
+
+    - name: Setup R Dependencies
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        packages: |
+          any::knitr
+          any::rmarkdown
+          any::plotly
+          any::DT
+          any::htmlwidgets
+          any::jsonlite
+          any::dplyr
+          any::ggplot2
+
+    - name: Setup Quarto
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        version: ${{ env.QUARTO_VERSION }}
+
+    - name: Azure Login (OIDC)
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Load Configuration
+      id: config
+      run: |
+        # Load configuration from environment or secrets
+        echo "CLIENT_NAME=${{ github.event.inputs.client_name || secrets.CLIENT_NAME }}" >> $GITHUB_OUTPUT
+        echo "RESOURCE_GROUP_NAME=${{ secrets.RESOURCE_GROUP_NAME }}" >> $GITHUB_OUTPUT
+        echo "LOCATION=${{ secrets.LOCATION }}" >> $GITHUB_OUTPUT
+        echo "APP_OWNER=${{ secrets.APP_OWNER }}" >> $GITHUB_OUTPUT
+        echo "VAULT_NAME=${{ secrets.VAULT_NAME }}" >> $GITHUB_OUTPUT
+        
+        # Set defaults if not provided
+        CLIENT_NAME="${{ github.event.inputs.client_name || secrets.CLIENT_NAME }}"
+        if [ -z "$CLIENT_NAME" ]; then
+          echo "Error: CLIENT_NAME is required"
+          exit 1
+        fi
+        
+        echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_OUTPUT
+        echo "SWA_NAME=${CLIENT_NAME}-serverless-dash" >> $GITHUB_OUTPUT
+
+    - name: Provision Infrastructure
+      id: provision
+      run: |
+        # Make scripts executable
+        chmod +x scripts/*.sh
+        
+        # Run provisioning script
+        ./scripts/provision-03_serverless_dash.sh "${{ steps.config.outputs.CLIENT_NAME }}"
+      env:
+        CONFIG: ${{ secrets.CONFIG }}
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Retrieve Deployment Token
+      id: deployment_token
+      run: |
+        # Get the deployment token from Key Vault
+        VAULT_NAME="${{ steps.config.outputs.VAULT_NAME }}"
+        SWA_NAME="${{ steps.config.outputs.SWA_NAME }}"
+        RESOURCE_GROUP_NAME="${{ steps.config.outputs.RESOURCE_GROUP_NAME }}"
+        
+        # Try to get from Key Vault first
+        DEPLOYMENT_TOKEN=$(az keyvault secret show \
+          --vault-name "$VAULT_NAME" \
+          --name "${{ steps.config.outputs.CLIENT_NAME }}-swa-deployment-token" \
+          --query value -o tsv 2>/dev/null || echo "")
+        
+        # If not in Key Vault, get directly from SWA
+        if [ -z "$DEPLOYMENT_TOKEN" ]; then
+          echo "Getting deployment token directly from Static Web App..."
+          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP_NAME" \
+            --query "properties.apiKey" -o tsv)
+        fi
+        
+        if [ -z "$DEPLOYMENT_TOKEN" ]; then
+          echo "Error: Could not retrieve deployment token"
+          exit 1
+        fi
+        
+        echo "::add-mask::$DEPLOYMENT_TOKEN"
+        echo "DEPLOYMENT_TOKEN=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
+
+    - name: Build Quarto Site
+      run: |
+        echo "Building Quarto site..."
+        quarto render
+        
+        # Verify build output
+        if [ ! -d "_site" ]; then
+          echo "Error: _site directory not found after Quarto render"
+          exit 1
+        fi
+        
+        echo "Quarto build completed successfully"
+        ls -la _site/
+
+    - name: Deploy to Azure Static Web Apps
+      id: deploy
+      uses: Azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ steps.deployment_token.outputs.DEPLOYMENT_TOKEN }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        action: "upload"
+        app_location: "_site"
+        output_location: ""
+        skip_app_build: true
+        skip_api_build: true
+
+    - name: Configure Authentication Settings
+      run: |
+        # Get app credentials from Key Vault
+        VAULT_NAME="${{ steps.config.outputs.VAULT_NAME }}"
+        CLIENT_NAME="${{ steps.config.outputs.CLIENT_NAME }}"
+        
+        echo "Retrieving authentication credentials from Key Vault..."
+        AZURE_CLIENT_ID_VALUE=$(az keyvault secret show \
+          --vault-name "$VAULT_NAME" \
+          --name "${CLIENT_NAME}-swa-client-id" \
+          --query value -o tsv)
+        
+        AZURE_CLIENT_SECRET_VALUE=$(az keyvault secret show \
+          --vault-name "$VAULT_NAME" \
+          --name "${CLIENT_NAME}-swa-client-secret" \
+          --query value -o tsv)
+        
+        # Configure Static Web App settings
+        echo "Configuring Static Web App authentication settings..."
+        az staticwebapp appsettings set \
+          --name "${{ steps.config.outputs.SWA_NAME }}" \
+          --resource-group "${{ steps.config.outputs.RESOURCE_GROUP_NAME }}" \
+          --setting-names "AZURE_CLIENT_ID=$AZURE_CLIENT_ID_VALUE" "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET_VALUE"
+
+    - name: Display Deployment Information
+      run: |
+        echo "=================================="
+        echo "🚀 Deployment Completed Successfully!"
+        echo "=================================="
+        echo "Client: ${{ steps.config.outputs.CLIENT_NAME }}"
+        echo "Static Web App: ${{ steps.config.outputs.SWA_NAME }}"
+        echo "Resource Group: ${{ steps.config.outputs.RESOURCE_GROUP_NAME }}"
+        echo "App URL: https://${{ steps.config.outputs.SWA_NAME }}.azurestaticapps.net"
+        echo "=================================="
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    environment: ${{ github.event.inputs.client_name || 'default' }}
+    
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+    - name: Azure Login (OIDC)
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Load Configuration
+      id: config
+      run: |
+        CLIENT_NAME="${{ secrets.CLIENT_NAME }}"
+        if [ -z "$CLIENT_NAME" ]; then
+          echo "Error: CLIENT_NAME is required"
+          exit 1
+        fi
+        
+        echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_OUTPUT
+        echo "SWA_NAME=${CLIENT_NAME}-serverless-dash" >> $GITHUB_OUTPUT
+
+    - name: Retrieve Deployment Token
+      id: deployment_token
+      run: |
+        VAULT_NAME="${{ secrets.VAULT_NAME }}"
+        
+        DEPLOYMENT_TOKEN=$(az keyvault secret show \
+          --vault-name "$VAULT_NAME" \
+          --name "${{ steps.config.outputs.CLIENT_NAME }}-swa-deployment-token" \
+          --query value -o tsv 2>/dev/null || echo "")
+        
+        if [ -z "$DEPLOYMENT_TOKEN" ]; then
+          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
+            --name "${{ steps.config.outputs.SWA_NAME }}" \
+            --resource-group "${{ secrets.RESOURCE_GROUP_NAME }}" \
+            --query "properties.apiKey" -o tsv)
+        fi
+        
+        echo "::add-mask::$DEPLOYMENT_TOKEN"
+        echo "DEPLOYMENT_TOKEN=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
+
+    - name: Close Pull Request
+      uses: Azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ steps.deployment_token.outputs.DEPLOYMENT_TOKEN }}
+        action: "close"

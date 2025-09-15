@@ -283,7 +283,7 @@ echo "Configuration synced successfully!"
 
 echo ""
 echo "Setting up federated credential for GitHub Actions..."
-#./scripts/github-fedcred-setup.sh "$CLIENT_NAME"
+./scripts/github-fedcred-setup.sh "$CLIENT_NAME"
 
 # Cleanup
 rm -f "$TEMP_KV_CONFIG" "$TEMP_COMBINED_CONFIG"
