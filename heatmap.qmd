@@ -5,8 +5,7 @@ format:
     code-fold: true
     theme: cosmo
     embed-resources: false
-    include-in-header: |
-      <script src="runtime-config.js"></script>
+  
 ---
 
 ```{=html}
