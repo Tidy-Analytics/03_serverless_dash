@@ -85,12 +85,23 @@ else
 
     if [ $? -eq 0 ]; then
         echo "✓ Static Web App created successfully"
+        
+        # Get the actual hostname assigned by Azure
+        ACTUAL_HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "defaultHostname" -o tsv)
+        SWA_URL="https://$ACTUAL_HOSTNAME"
+        echo "Actual Static Web App URL: $SWA_URL"
+        
         DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "properties.apiKey" -o tsv)
     else
         echo "❌ Failed to create Static Web App"
         exit 1
     fi
 fi
+
+# For existing Static Web Apps, also get the actual hostname
+ACTUAL_HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query "defaultHostname" -o tsv)
+SWA_URL="https://$ACTUAL_HOSTNAME"
+echo "Using actual Static Web App URL: $SWA_URL"
 
 echo ""
 echo "=== Step 3: Create/Invite App Owner User ==="
@@ -129,11 +140,14 @@ fi
 
 echo ""
 echo "=== Step 4: Create/Update Azure AD App Registration ==="
-SWA_URL="https://${SWA_NAME}.azurestaticapps.net"
 
 # Check if app registration exists
 if APP_ID=$(az ad app list --display-name "$APP_REG_NAME" --query "[0].appId" -o tsv) && [ -n "$APP_ID" ]; then
     echo "App registration $APP_REG_NAME already exists with ID: $APP_ID"
+    
+    # Update redirect URI with actual hostname
+    echo "Updating redirect URI to: $SWA_URL/.auth/login/aad/callback"
+    az ad app update --id "$APP_ID" --web-redirect-uris "$SWA_URL/.auth/login/aad/callback"
 else
     echo "Creating app registration: $APP_REG_NAME"
     APP_ID=$(az ad app create \

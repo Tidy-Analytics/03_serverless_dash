@@ -1,11 +1,10 @@
 {
   "auth": {
-    "rolesSource": "/api/GetRoles",
     "identityProviders": {
       "azureActiveDirectory": {
         "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
         "registration": {
-          "openIdIssuer": "https://login.microsoftonline.com/common/v2.0",
+          "openIdIssuer": "https://login.microsoftonline.com/2e9de0bc-6c13-4010-a717-3901155b31a8/v2.0",
           "clientIdSettingName": "AZURE_CLIENT_ID",
           "clientSecretSettingName": "AZURE_CLIENT_SECRET"
         }
@@ -23,12 +22,12 @@
     },
     {
       "route": "/login",
-      "serve": "/.auth/login/aad",
+      "redirect": "/.auth/login/aad",
       "statusCode": 301
     },
     {
       "route": "/logout",
-      "serve": "/.auth/logout",
+      "redirect": "/.auth/logout",
       "statusCode": 301
     },
     {
