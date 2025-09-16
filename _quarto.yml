@@ -1,6 +1,12 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - "*.qmd"
+    - "*.ipynb" 
+    - "!lineage/"
+    - "!scripts/"
+    - "!.github/"
 
 website:
   title: "Customer Analytics Dashboard"

@@ -1,0 +1,5 @@
+lineage/
+scripts/
+.github/
+configs/
+*.sh
