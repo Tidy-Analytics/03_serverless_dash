@@ -75,12 +75,33 @@ jobs:
         # Clean up
         rm quarto-${{ env.QUARTO_VERSION }}-linux-amd64.deb
 
-    - name: Azure Login
+    - name: Azure Login (Client Identity)
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Switch to Client-Specific Identity
+      run: |
+        # Switch to the client-specific managed identity
+        CLIENT_NAME="${{ github.event.inputs.client_name }}"
+        CLIENT_IDENTITY_NAME="${CLIENT_NAME}-admin-identity"
+        
+        echo "Attempting to use client identity: $CLIENT_IDENTITY_NAME"
+        
+        # Get the client identity details
+        IDENTITY_ID=$(az identity show \
+          --resource-group "${CLIENT_NAME}-rg" \
+          --name "$CLIENT_IDENTITY_NAME" \
+          --query "id" -o tsv 2>/dev/null || echo "")
+        
+        if [ -n "$IDENTITY_ID" ]; then
+          echo "✓ Found client identity: $IDENTITY_ID"
+          echo "CLIENT_IDENTITY_ID=$IDENTITY_ID" >> $GITHUB_ENV
+        else
+          echo "⚠️ Client identity not found, using provisioner identity"
+        fi
 
     - name: Load Configuration
       id: config
@@ -103,12 +124,10 @@ jobs:
     - name: Debug Environment
       run: |
         echo "Checking environment variables..."
-        echo "GH_TOKEN length: ${#GH_TOKEN}"
-        echo "GH_TOKEN first 8 chars: ${GH_TOKEN:0:8}..."
         echo "Azure Client ID: ${AZURE_CLIENT_ID:0:8}..."
         echo "Environment: ${{ github.event.inputs.client_name }}"
+        echo "Client Identity ID: ${CLIENT_IDENTITY_ID:-'Not set'}"
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
     - name: Provision Infrastructure
@@ -124,8 +143,6 @@ jobs:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Retrieve Deployment Token
       id: deployment_token

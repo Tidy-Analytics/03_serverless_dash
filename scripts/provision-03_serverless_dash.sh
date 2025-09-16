@@ -72,42 +72,16 @@ if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAM
 else
     echo "Creating Static Web App: $SWA_NAME"
     
-    # Debug: Check if GH_TOKEN is available
-    if [ -n "$GH_TOKEN" ]; then
-        echo "✓ GitHub token is available (length: ${#GH_TOKEN})"
-        echo "Using GitHub token for authentication"
-        TOKEN_TO_USE="$GH_TOKEN"
-    elif [ -n "$GITHUB_TOKEN" ]; then
-        echo "✓ GitHub workflow token is available (length: ${#GITHUB_TOKEN})"
-        echo "Using GitHub workflow token for authentication"
-        TOKEN_TO_USE="$GITHUB_TOKEN"
-    else
-        echo "❌ No GitHub token available (GH_TOKEN and GITHUB_TOKEN are empty or unset)"
-        echo "Falling back to interactive login"
-        TOKEN_TO_USE=""
-    fi
+    # Create Static Web App without GitHub integration using managed identity
+    echo "Using managed identity for Azure authentication"
+    az staticwebapp create \
+      --name "$SWA_NAME" \
+      --resource-group "$RESOURCE_GROUP_NAME" \
+      --location "$LOCATION" \
+      --sku "Free"
     
-    if [ -n "$TOKEN_TO_USE" ]; then
-        az staticwebapp create \
-          --name "$SWA_NAME" \
-          --resource-group "$RESOURCE_GROUP_NAME" \
-          --source "https://github.com/$APP_REPO" \
-          --location "$LOCATION" \
-          --branch "master" \
-          --app-location "_site" \
-          --output-location "" \
-          --token "$TOKEN_TO_USE"
-    else
-        az staticwebapp create \
-          --name "$SWA_NAME" \
-          --resource-group "$RESOURCE_GROUP_NAME" \
-          --source "https://github.com/$APP_REPO" \
-          --location "$LOCATION" \
-          --branch "master" \
-          --app-location "_site" \
-          --output-location "" \
-          --login-with-github
-    fi
+    # Note: We skip GitHub integration since we're using GitHub Actions directly
+    # The deployment will happen via the Deploy step in this workflow
 
     if [ $? -eq 0 ]; then
         echo "✓ Static Web App created successfully"
