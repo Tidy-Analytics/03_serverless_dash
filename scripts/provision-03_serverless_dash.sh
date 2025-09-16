@@ -72,9 +72,22 @@ if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP_NAM
 else
     echo "Creating Static Web App: $SWA_NAME"
     
-    # Check if GH_TOKEN is available for non-interactive GitHub authentication
+    # Debug: Check if GH_TOKEN is available
     if [ -n "$GH_TOKEN" ]; then
+        echo "✓ GitHub token is available (length: ${#GH_TOKEN})"
         echo "Using GitHub token for authentication"
+        TOKEN_TO_USE="$GH_TOKEN"
+    elif [ -n "$GITHUB_TOKEN" ]; then
+        echo "✓ GitHub workflow token is available (length: ${#GITHUB_TOKEN})"
+        echo "Using GitHub workflow token for authentication"
+        TOKEN_TO_USE="$GITHUB_TOKEN"
+    else
+        echo "❌ No GitHub token available (GH_TOKEN and GITHUB_TOKEN are empty or unset)"
+        echo "Falling back to interactive login"
+        TOKEN_TO_USE=""
+    fi
+    
+    if [ -n "$TOKEN_TO_USE" ]; then
         az staticwebapp create \
           --name "$SWA_NAME" \
           --resource-group "$RESOURCE_GROUP_NAME" \
@@ -83,9 +96,8 @@ else
           --branch "master" \
           --app-location "_site" \
           --output-location "" \
-          --token "$GH_TOKEN"
+          --token "$TOKEN_TO_USE"
     else
-        echo "No GitHub token available, using interactive login"
         az staticwebapp create \
           --name "$SWA_NAME" \
           --resource-group "$RESOURCE_GROUP_NAME" \

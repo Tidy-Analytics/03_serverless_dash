@@ -23,6 +23,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      actions: write
+      pull-requests: write
+      issues: write
+      repository-projects: write
       
     steps:
     - name: Checkout Repository
@@ -96,6 +100,17 @@ jobs:
         echo "VAULT_NAME=${{ secrets.VAULT_NAME }}" >> $GITHUB_OUTPUT
         echo "SWA_NAME=${CLIENT_NAME}-serverless-dash" >> $GITHUB_OUTPUT
 
+    - name: Debug Environment
+      run: |
+        echo "Checking environment variables..."
+        echo "GH_TOKEN length: ${#GH_TOKEN}"
+        echo "GH_TOKEN first 8 chars: ${GH_TOKEN:0:8}..."
+        echo "Azure Client ID: ${AZURE_CLIENT_ID:0:8}..."
+        echo "Environment: ${{ github.event.inputs.client_name }}"
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
     - name: Provision Infrastructure
       id: provision
       run: |
@@ -110,6 +125,7 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Retrieve Deployment Token
       id: deployment_token
